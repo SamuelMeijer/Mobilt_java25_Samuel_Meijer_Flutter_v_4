@@ -37,11 +37,13 @@ class _MyHomePageState extends State<MyHomePage> {
   String? _username;
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _isRightHanded = false;
 
   @override
   void initState() {
     super.initState();
     _loadUsername();
+    _loadRightHandedValue();
   }
 
   void _loadUsername() async {
@@ -75,6 +77,17 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _username = enteredUsername;
       _isSaving = false;
+    });
+  }
+
+  void _loadRightHandedValue() async {
+    final storedValue = await sharedPref.getBool('isRighthanded');
+
+    // Preventing setState to be called on a page no longer in use, if the user changes viewing page while the async function is waiting for await result to finish
+    if (!mounted) return;
+
+    setState(() {
+      _isRightHanded = storedValue ?? false;
     });
   }
 
@@ -114,6 +127,18 @@ class _MyHomePageState extends State<MyHomePage> {
             ElevatedButton(
               onPressed: _isSaving ? null : _saveUsername,
               child: Text('Save username'),
+            ),
+
+            // TODO: Fix styling - Covers whole screen atm.
+            SwitchListTile(
+              title: Text("Are you right handed?"),
+              value: _isRightHanded,
+              onChanged: (bool switchValue) async {
+                await sharedPref.setBool('isRighthanded', switchValue);
+                setState(() {
+                  _isRightHanded = switchValue;
+                });
+              },
             ),
 
             ElevatedButton(
