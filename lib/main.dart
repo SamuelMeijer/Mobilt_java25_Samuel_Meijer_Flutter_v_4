@@ -98,6 +98,11 @@ class _MyHomePageState extends State<MyHomePage> {
               style: Theme.of(context).textTheme.headlineMedium,
             ),
 
+            CircleAvatar(
+              radius: 75,
+              backgroundImage: AssetImage('assets/images/dog.jpg'),
+            ),
+
             // TODO: Fix styling - Covers whole screen atm.
             TextField(
               decoration: InputDecoration(
