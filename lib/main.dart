@@ -103,54 +103,63 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: .center,
-          children: [
-            Text(
-              'Welcome ${_username ?? 'Guest'}!',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-
-            CircleAvatar(
-              radius: 75,
-              backgroundImage: AssetImage('assets/images/dog.jpg'),
-            ),
-
-            // TODO: Fix styling - Covers whole screen atm.
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Update username',
-                hintText: 'Enter your new username',
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 600),
+          child: Column(
+            mainAxisAlignment: .center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Welcome ${_username ?? 'Guest'}!',
+                style: Theme.of(context).textTheme.headlineMedium,
+                textAlign: .center,
               ),
-              controller: _usernameController,
-            ),
-            ElevatedButton(
-              onPressed: _isSaving ? null : _saveUsername,
-              child: Text('Save username'),
-            ),
 
-            // TODO: Fix styling - Covers whole screen atm.
-            SwitchListTile(
-              title: Text("Are you right handed?"),
-              value: _isRightHanded,
-              onChanged: (bool switchValue) async {
-                await sharedPref.setBool('isRighthanded', switchValue);
-                setState(() {
-                  _isRightHanded = switchValue;
-                });
-              },
-            ),
+              CircleAvatar(
+                radius: 180,
+                backgroundImage: AssetImage('assets/images/dog.jpg'),
+              ),
 
-            ElevatedButton(
-              onPressed: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SensorData()),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  decoration: InputDecoration(
+                    labelText: 'Update username',
+                    hintText: 'Enter your new username',
+                  ),
+                  controller: _usernameController,
                 ),
-              },
-              child: Text("View Sensor Data"),
-            ),
-          ],
+              ),
+              ElevatedButton(
+                onPressed: _isSaving ? null : _saveUsername,
+                child: Text('Save username'),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SwitchListTile(
+                  title: Text("Are you right handed?"),
+                  value: _isRightHanded,
+                  onChanged: (bool switchValue) async {
+                    await sharedPref.setBool('isRighthanded', switchValue);
+                    setState(() {
+                      _isRightHanded = switchValue;
+                    });
+                  },
+                ),
+              ),
+
+              ElevatedButton(
+                onPressed: () => {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SensorData()),
+                  ),
+                },
+                child: Text("View Sensor Data"),
+              ),
+            ],
+          ),
         ),
       ),
     );
