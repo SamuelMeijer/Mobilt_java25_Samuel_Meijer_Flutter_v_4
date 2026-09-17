@@ -1,7 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:async';
 
-import 'dart:io' as io;
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'
+    show kIsWeb, defaultTargetPlatform, TargetPlatform;
+// Packages
+import 'package:sensors_plus/sensors_plus.dart';
 
 class SensorData extends StatefulWidget {
   const new({super.key});
@@ -11,8 +14,91 @@ class SensorData extends StatefulWidget {
 }
 
 class _SensorDataState extends State<SensorData> {
+  // SensorPlus-subscription
+  StreamSubscription<GyroscopeEvent>? _gyroscopeSubscription;
+
+  // States
+  double _x = 0.0;
+  double _y = 0.0;
+  double _z = 0.0;
+  String? _sensorError;
+
+  // Checking which device or if web is needed (dart:io Platform API doesnt work in Flutter Web)
+  bool get isAndroid {
+    return !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (isAndroid) {
+      _startListeningToGyroscope();
+    }
+  }
+
+  void _startListeningToGyroscope() {
+    _gyroscopeSubscription =
+        gyroscopeEventStream(samplingPeriod: SensorInterval.normalInterval)
+            .listen(
+              (GyroscopeEvent event) {
+                // Preventing setState to be called on a page no longer in use, if the user changes viewing page while the async function is waiting for await result to finish
+                if (!mounted) return;
+
+                setState(() {
+                  _x = event.x;
+                  _y = event.y;
+                  _z = event.z;
+                  _sensorError = null;
+                });
+              },
+              onError: (err) {
+                if (!mounted) return;
+                setState(() {
+                  _sensorError = 'Error: Sensor data is not supported';
+                });
+              },
+              cancelOnError: true,
+            );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // NOT ANDROID DEVICES
+    if (!isAndroid) {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          title: Text("Sensor Data"),
+        ),
+
+        body: Center(
+          child: Column(
+            mainAxisAlignment: .center,
+            children: [Text('Sensor data is not supported')],
+          ),
+        ),
+      );
+    }
+
+    // IF AN ERROR OCCURS
+    if (_sensorError != null) {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          title: Text("Sensor Data"),
+        ),
+
+        body: Center(
+          child: Column(
+            mainAxisAlignment: .center,
+            children: [Text(_sensorError!)],
+          ),
+        ),
+      );
+    }
+
+    // ANDROID DEVICES
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -20,31 +106,16 @@ class _SensorDataState extends State<SensorData> {
       ),
 
       body: Center(
-        child: Column(mainAxisAlignment: .center, children: [
-          getPlatformPage()
-        ]),
+        child: Column(
+          mainAxisAlignment: .center,
+          children: [
+            Text('GYROSCOPE DATA:'),
+            Text('X: ${_x.toStringAsFixed(2)}'),
+            Text('Y: ${_y.toStringAsFixed(2)}'),
+            Text('Z: ${_z.toStringAsFixed(2)}'),
+          ],
+        ),
       ),
     );
-  }
-
-  // TODO: IMPLEMENT PLATTFORM CHECK
-  // => Visa sensordata om Android
-  // => Visa sensordata om möjligt på Webb (funkar det inte så visa text istället)
-  // Kan reutrnera vilken Widget som helst
-  Widget getPlatformPage() {
-    if (kIsWeb) {
-      return const Text("WEBB - Sensor Data not supported");
-    } else if (io.Platform.isAndroid) {
-      return const Text("ANDRODID");
-    } else if (io.Platform.isWindows) {
-      return const Text("WINDOWS");
-    } else if (io.Platform.isIOS) {
-      return const Text("IOS APPLE");
-    } else if (io.Platform.isMacOS) {
-      return const Text("MAC");
-    } else if (io.Platform.isLinux) {
-      return const Text("LINUX");
-    }
-    return const Text("Plattform stöds inte");
   }
 }
