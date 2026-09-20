@@ -46,3 +46,7 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Keys
+android/key.properties
+android/upload-keystore.jks
