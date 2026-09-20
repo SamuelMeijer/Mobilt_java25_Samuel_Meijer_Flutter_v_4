@@ -70,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _isSaving = true;
     });
 
-    await sharedPref.setString('useranme', enteredUsername);
+    await sharedPref.setString('username', enteredUsername);
     // Preventing setState to be called on a page no longer in use, if the user changes viewing page while the async function is waiting for await result to finish
     if (!mounted) return;
 
